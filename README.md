@@ -12,11 +12,10 @@ npm install react-native-fnc-spatialite
 
 
 ```js
-import { multiply } from 'react-native-fnc-spatialite';
+import RNSpatial from 'react-native-fnc-spatialite';
 
 // ...
-
-const result = await multiply(3, 7);
+const result = await RNSpatial.connect({ dbName: logFilePath });
 ```
 
 

@@ -17,6 +17,4 @@ const RNSpatial = NativeModules.RNSpatial
       }
     );
 
-export function multiply(a: number, b: number): Promise<number> {
-  return RNSpatial.multiply(a, b);
-}
+export default RNSpatial;
