@@ -1,78 +1,78 @@
+import SQLite3
+
 @objc(RNSpatial)
 class RNSpatial: NSObject {
-  var handle: OpaquePointer? // Definir la variable 'handle' aquí
+  var handle: OpaquePointer? // Variable para el puntero de la base de datos
 
-  @objc(connect:withResolver:withRejecter:)
-  func connect(_ paramsDataBase: [String: Any], resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    guard let dbName = (paramsDataBase["dbName"] as? String)?.trimmingCharacters(in: .whitespaces), !dbName.isEmpty else {
-        reject("DB_ERROR", "DBName can't be empty", nil)
-        return
-    }
+  // Método para conectar a la base de datos
+   @objc(connect:withResolver:withRejecter:)
+    func connect(_ paramsDataBase: [String: Any], resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+        guard let dbName = (paramsDataBase["dbName"] as? String)?.trimmingCharacters(in: .whitespaces), !dbName.isEmpty else {
+            reject("DB_ERROR", "DBName can't be empty", nil)
+            return
+        }
 
-    // Aquí procesas dbName y otros parámetros como lo haces en Android.
-    let finalDbName = dbName.hasSuffix(".sqlite") ? dbName : dbName + ".sqlite"
-    
-    // Pasa el nombre de archivo al método `myopen` en C
-    let filePath = finalDbName.cString(using: .utf8)
-    let spatialInitialized = myopen(filePath)
+        let finalDbName = dbName.hasSuffix(".sqlite") ? dbName : dbName + ".sqlite"
+        let filePath = finalDbName.cString(using: .utf8)
 
-    if spatialInitialized == -1 {
-        reject("DB_ERROR", "Failed to open database or initialize SpatiaLite", nil)
-    } else {
+        // Abrir la base de datos SQLite
+        if sqlite3_open_v2(filePath, &handle, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nil) != SQLITE_OK {
+            reject("DB_ERROR", "Unable to open database", nil)
+            return
+        }
+
+        // Llamar a la función C para inicializar SpatiaLite
+        if initialize_spatialite(handle) != 0 {
+            reject("SPATIALITE_ERROR", "Failed to initialize SpatiaLite", nil)
+            return
+        }
+
         let result: [String: Any] = [
             "isConnected": true,
-            "isSpatial": spatialInitialized == 1
+            "isSpatial": true
         ]
         resolve(result)
     }
-}
 
-@objc(executeQuery:withResolver:withRejecter:)
-func executeQuery(_ query: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  // Método para ejecutar consultas SQL
+  @objc(executeQuery:withResolver:withRejecter:)
+  func executeQuery(_ query: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+    guard let handle = handle else {
+        reject("DB_ERROR", "No database connection", nil)
+        return
+    }
     
-    // Ejecutar la consulta usando la función C
-    var errMsg: UnsafeMutablePointer<CChar>?
-    var columnNames: UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>?
-    var rows: UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>?
-    var rowCount: Int32 = 0
-    var colCount: Int32 = 0
-
-    let result = execute_query(handle, query, &errMsg, &columnNames, &rows, &rowCount, &colCount)
-
+    var stmt: OpaquePointer? = nil
+    let result = sqlite3_prepare_v2(handle, query, -1, &stmt, nil)
+    
     if result != SQLITE_OK {
-        if let errMsg = errMsg {
-            reject("QUERY_ERROR", String(cString: errMsg), nil)
-            sqlite3_free(errMsg)
-        } else {
-            reject("QUERY_ERROR", "Unknown error", nil)
+        if let errorMessage = String(validatingUTF8: sqlite3_errmsg(handle)) {
+            reject("QUERY_ERROR", "Failed to prepare query: \(errorMessage)", nil)
         }
         return
     }
-
-    // Construir el resultado como un mapa y array
-    var resultsArray: [[String: Any]] = []
-
-    for rowIndex in 0..<Int(rowCount) {
-        var rowDict: [String: Any] = [:]
-        for colIndex in 0..<Int(colCount) {
-            let columnName = String(cString: columnNames![colIndex]!)
-            let value = String(cString: rows![rowIndex * Int(colCount) + colIndex]!)
-            rowDict[columnName] = value
+    
+    var results: [[String: Any]] = []
+    
+    // Ejecuta la consulta y procesa los resultados
+    while sqlite3_step(stmt) == SQLITE_ROW {
+        var row: [String: Any] = [:]
+        let columnCount = sqlite3_column_count(stmt)
+        
+        for i in 0..<columnCount {
+            let columnName = String(cString: sqlite3_column_name(stmt, i))
+            let columnText = sqlite3_column_text(stmt, i)
+            
+            if let text = columnText {
+                row[columnName] = String(cString: text)
+            } else {
+                row[columnName] = NSNull()
+            }
         }
-        resultsArray.append(rowDict)
+        results.append(row)
     }
-
-    // Devolver el resultado a través de la promesa
-    let resultDict: [String: Any] = [
-        "rows": rowCount,
-        "cols": colCount,
-        "data": resultsArray
-    ]
-
-    resolve(resultDict)
-
-    // Liberar la memoria
-    sqlite3_close(handle)
+    
+    sqlite3_finalize(stmt)
+    resolve(results)
   }
-
 }
