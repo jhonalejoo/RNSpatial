@@ -22,14 +22,38 @@ export default function App() {
 
   const execute =async ()=>{
     const result = await RNSpatial.executeQuery('SELECT  VER_PK from SC_VEREDAS WHERE  VER_PK =  10131');
+
+    
     console.log(result)
   }
+  const exec =()=> {
+    return new Promise((resolve, reject) => {
+        let validation = false;
+        if (validation === false) {
+          RNSpatial.executeQuery('SELECT  VER_PK from SC_VEREDAS WHERE  VER_PK =  10131').then(response => {
+                console.log(response,'response')
+                const result = [];
+                for (let i = 0; i < response.data.length; ++i) {
+                    const objResult = {};
+                    for (var key in response.data[i]) {
+                        objResult[key.toUpperCase()] = response.data[i][key];
+                    }
+                    result.push(objResult);
+                }
+                console.log(result)
+                resolve(result);
+            }).catch(error => resolve({ result: error }));
+        } else {
+            resolve(undefined);
+        }
+    });
+}
 
   return (
     <View style={styles.container}>
       <Text>Result: 2</Text>
       <Button
-      onPress={()=> execute()}
+      onPress={()=> exec()}
       title={'ejemplo'}
       />
     </View>
