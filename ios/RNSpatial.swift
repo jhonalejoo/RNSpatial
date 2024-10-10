@@ -72,9 +72,9 @@ class RNSpatial: NSObject {
         }
         results.append(row)
     }
-    print("results es \(results)")
     
     sqlite3_finalize(stmt)
-    resolve(results)
+     let formattedResult: [String: Any] = ["data": results]
+    resolve(formattedResult)
   }
 }
