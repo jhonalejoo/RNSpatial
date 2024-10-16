@@ -41,8 +41,6 @@ class RNSpatial: NSObject {
         reject("DB_ERROR", "No database connection", nil)
         return
     }
-        print("query es \(query)")
-
     var stmt: OpaquePointer? = nil
     let result = sqlite3_prepare_v2(handle, query, -1, &stmt, nil)
     

@@ -10,7 +10,7 @@ export default function App() {
   useEffect(() => {
     const initializeDatabase = async () => {
       try {
-        const result = await RNSpatial.connect({ dbName: logFilePath });
+        const result = await RNSpatial.connect({ dbName: 'dbSica.sqlite'});
         console.log('Success:', result);
       } catch (error) {
         console.error('Error:', error);
