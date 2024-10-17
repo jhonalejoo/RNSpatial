@@ -91,5 +91,5 @@ func executeQuery(_ query: String, resolver resolve: @escaping RCTPromiseResolve
     sqlite3_finalize(stmt)
     let formattedResult: [String: Any] = ["data": results]
     resolve(formattedResult)
+    }
 }
-
