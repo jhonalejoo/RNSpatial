@@ -35,8 +35,8 @@ class RNSpatial: NSObject {
     }
 
   // Método para ejecutar consultas SQL
-  @objc(executeQuery:withResolver:withRejecter:)
-  func executeQuery(_ query: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+ @objc(executeQuery:withResolver:withRejecter:)
+func executeQuery(_ query: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
     guard let handle = handle else {
         reject("DB_ERROR", "No database connection", nil)
         return
@@ -59,20 +59,37 @@ class RNSpatial: NSObject {
         let columnCount = sqlite3_column_count(stmt)
         
         for i in 0..<columnCount {
-            let columnName = String(cString: sqlite3_column_name(stmt, i))
-            let columnText = sqlite3_column_text(stmt, i)
+            let columnName = String(cString: sqlite3_column_name(stmt, i)).lowercased()
+            let columnType = sqlite3_column_type(stmt, i)
             
-            if let text = columnText {
-                row[columnName] = String(cString: text)
-            } else {
+            switch columnType {
+            case SQLITE_INTEGER:
+                let intValue = sqlite3_column_int64(stmt, i)
+                row[columnName] = Int(intValue)
+            case SQLITE_FLOAT:
+                let doubleValue = sqlite3_column_double(stmt, i)
+                row[columnName] = Double(doubleValue)
+            case SQLITE_TEXT:
+                if let textValue = sqlite3_column_text(stmt, i) {
+                    row[columnName] = String(cString: textValue)
+                } else {
+                    row[columnName] = NSNull()
+                }
+            case SQLITE_NULL:
                 row[columnName] = NSNull()
+            default:
+                if let textValue = sqlite3_column_text(stmt, i) {
+                    row[columnName] = String(cString: textValue)
+                } else {
+                    row[columnName] = NSNull()
+                }
             }
         }
         results.append(row)
     }
     
     sqlite3_finalize(stmt)
-     let formattedResult: [String: Any] = ["data": results]
+    let formattedResult: [String: Any] = ["data": results]
     resolve(formattedResult)
-  }
 }
+
