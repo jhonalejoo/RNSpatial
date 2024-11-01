@@ -12,6 +12,13 @@ class RNSpatial: NSObject {
             return
         }
 
+        if let projDbPath = Bundle.main.resourcePath {
+        setenv("PROJ_LIB", projDbPath, 1)
+        print("PROJ_LIB set to: \(projDbPath)")
+        } else {
+        print("Error: proj.db directory not found in bundle")
+        }
+
         let finalDbName = dbName.hasSuffix(".sqlite") ? dbName : dbName + ".sqlite"
         let filePath = finalDbName.cString(using: .utf8)
 
@@ -43,7 +50,6 @@ func executeQuery(_ query: String, resolver resolve: @escaping RCTPromiseResolve
     }
     var stmt: OpaquePointer? = nil
     let result = sqlite3_prepare_v2(handle, query, -1, &stmt, nil)
-    
     if result != SQLITE_OK {
         if let errorMessage = String(validatingUTF8: sqlite3_errmsg(handle)) {
             reject("QUERY_ERROR", "Failed to prepare query: \(errorMessage)", nil)
@@ -93,3 +99,8 @@ func executeQuery(_ query: String, resolver resolve: @escaping RCTPromiseResolve
     resolve(formattedResult)
     }
 }
+
+
+
+
+
