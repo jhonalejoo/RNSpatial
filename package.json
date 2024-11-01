@@ -51,14 +51,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jhonalejoo/react-native-fnc-spatialite.git"
+    "url": "git+https://github.com/jhonalejoo/RNSpatial.git"
   },
   "author": "jhonalejoo <42988740+jhonalejoo@users.noreply.github.com> (https://github.com/jhonalejoo)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jhonalejoo/react-native-fnc-spatialite/issues"
+    "url": "https://github.com/jhonalejoo/RNSpatial/issues"
   },
-  "homepage": "https://github.com/jhonalejoo/react-native-fnc-spatialite#readme",
+  "homepage": "https://github.com/jhonalejoo/RNSpatial#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },

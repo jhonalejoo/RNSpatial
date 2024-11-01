@@ -81,3 +81,4 @@ lib/
 ios/generated
 android/generated
 example/package-lock.json
+package-lock.json
