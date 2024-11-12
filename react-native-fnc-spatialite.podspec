@@ -12,7 +12,7 @@ Pod::Spec.new do |s|
   s.authors      = package["author"]
 
   s.platforms    = { :ios => min_ios_version_supported }
-  s.source       = { :git => "https://github.com/jhonalejoo/react-native-fnc-spatialite.git", :tag => "#{s.version}" }
+  s.source       = { :git => "https://github.com/jhonalejoo/RNSpatial.git", :tag => "#{s.version}" }
 
   s.source_files = "ios/**/*.{h,m,mm,swift}"
   s.resources = 'ios/Database/proj.db'
