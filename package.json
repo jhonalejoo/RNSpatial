@@ -1,6 +1,6 @@
 {
   "name": "react-native-fnc-spatialite",
-  "version": "0.5.0",
+  "version": "0.7.0",
   "description": "spatial",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",
@@ -22,6 +22,7 @@
     "lib",
     "android",
     "ios",
+    "SpatiaLite",
     "cpp",
     "*.podspec",
     "!ios/build",
