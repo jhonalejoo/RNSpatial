@@ -5,7 +5,6 @@
 //  Created by Jhon Alejandro Cuervo Sanchez on 4/10/24.
 //
 
-#include "RNSpatial.h"
 #include <sqlite3.h>
 #include <spatialite.h>
 #include <spatialite/gaiageo.h>

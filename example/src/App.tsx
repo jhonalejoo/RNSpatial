@@ -1,16 +1,15 @@
 import { useEffect } from 'react';
-import { StyleSheet, View, Text, Button, Alert } from 'react-native';
+import { StyleSheet, View, Text, Button, Alert, Platform } from 'react-native';
 import RNSpatial from 'react-native-fnc-spatialite';
 var RNFS = require('react-native-fs');
 
 export default function App() {
   const logFilePath = RNFS.DocumentDirectoryPath + '/dbSica.sqlite';
-  console.log(logFilePath,'log')
 
   useEffect(() => {
     const initializeDatabase = async () => {
       try {
-        const result = await RNSpatial.connect({ dbName: 'dbSica.sqlite'});
+        const result = await RNSpatial.connect({ dbName: Platform.OS === 'android' ? 'dbSica.sqlite'  : logFilePath});
         console.log('Success:', result);
       } catch (error) {
         console.error('Error:', error);
