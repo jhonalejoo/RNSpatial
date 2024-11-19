@@ -1,6 +1,6 @@
 # react-native-fnc-spatialite
 
-spatial
+Spatialite module
 
 ## Installation
 

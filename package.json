@@ -1,6 +1,6 @@
 {
   "name": "react-native-fnc-spatialite",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "spatial",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",
@@ -25,6 +25,7 @@
     "SpatiaLite",
     "cpp",
     "*.podspec",
+    "react-native.config.json",
     "!ios/build",
     "!android/build",
     "!android/gradle",
@@ -52,22 +53,23 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jhonalejoo/RNSpatial.git"
+    "url": "git+https://github.com/jhonalejoo/RNSpatial.git.git"
   },
-  "author": "jhonalejoo <42988740+jhonalejoo@users.noreply.github.com> (https://github.com/jhonalejoo)",
+  "author": "jhonalejoo <jhonalejoo@gmail.com> (https://github.com/jhonalejoo)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jhonalejoo/RNSpatial/issues"
+    "url": "https://github.com/jhonalejoo/RNSpatial.git/issues"
   },
-  "homepage": "https://github.com/jhonalejoo/RNSpatial#readme",
+  "homepage": "https://github.com/jhonalejoo/RNSpatial.git#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^17.0.2",
     "@evilmartians/lefthook": "^1.5.0",
+    "@react-native-community/cli": "15.0.1",
     "@react-native/eslint-config": "^0.73.1",
-    "@release-it/conventional-changelog": "^5.0.0",
+    "@release-it/conventional-changelog": "^9.0.2",
     "@types/jest": "^29.5.5",
     "@types/react": "^18.2.44",
     "commitlint": "^17.0.2",
@@ -79,8 +81,8 @@
     "prettier": "^3.0.3",
     "react": "18.3.1",
     "react-native": "0.75.4",
-    "react-native-builder-bob": "^0.30.2",
-    "release-it": "^15.0.0",
+    "react-native-builder-bob": "^0.32.1",
+    "release-it": "^17.10.0",
     "turbo": "^1.10.7",
     "typescript": "^5.2.2"
   },
@@ -159,6 +161,7 @@
     "source": "src",
     "output": "lib",
     "targets": [
+      "codegen",
       [
         "commonjs",
         {
@@ -179,6 +182,19 @@
         }
       ]
     ]
+  },
+  "codegenConfig": {
+    "name": "RNSpatialSpec",
+    "type": "all",
+    "jsSrcsDir": "src",
+    "outputDir": {
+      "ios": "ios/generated",
+      "android": "android/generated"
+    },
+    "android": {
+      "javaPackageName": "com.fncspatialite"
+    },
+    "includesGeneratedCode": true
   },
   "create-react-native-library": {
     "type": "module-legacy",

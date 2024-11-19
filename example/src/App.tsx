@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { StyleSheet, View, Text, Button, Alert, Platform } from 'react-native';
+import { StyleSheet, View, Text, Button, Platform } from 'react-native';
 import RNSpatial from 'react-native-fnc-spatialite';
 var RNFS = require('react-native-fs');
 
@@ -19,12 +19,6 @@ export default function App() {
     initializeDatabase(); // Iniciar el proceso de verificación y conexión
   }, []); // Agregar 'logFilePath' como dependencia
 
-  const execute =async ()=>{
-    const result = await RNSpatial.executeQuery('SELECT  VER_PK from SC_VEREDAS WHERE  VER_PK =  10131');
-
-    
-    console.log(result)
-  }
   const exec =()=> {
     return new Promise((resolve, reject) => {
         let validation = false;
