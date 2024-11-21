@@ -25,7 +25,6 @@
     "SpatiaLite",
     "cpp",
     "*.podspec",
-    "react-native.config.json",
     "!ios/build",
     "!android/build",
     "!android/gradle",

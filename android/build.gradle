@@ -63,12 +63,7 @@ android {
   defaultConfig {
     minSdkVersion getExtOrIntegerDefault("minSdkVersion")
     targetSdkVersion getExtOrIntegerDefault("targetSdkVersion")
-    buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
 
-  }
-
-  buildFeatures {
-    buildConfig true
   }
 
   buildTypes {
@@ -84,17 +79,6 @@ android {
   compileOptions {
     sourceCompatibility JavaVersion.VERSION_1_8
     targetCompatibility JavaVersion.VERSION_1_8
-  }
-
-  sourceSets {
-    main {
-      if (isNewArchitectureEnabled()) {
-          java.srcDirs += [
-            "generated/java",
-            "generated/jni"
-          ]
-      }
-    }
   }
 }
 
@@ -114,10 +98,3 @@ dependencies {
   implementation 'com.github.mvits:Geo-Spatialite-Android:1.0.2'
 }
 
-if (isNewArchitectureEnabled()) {
-  react {
-    jsRootDir = file("../src/")
-    libraryName = "RNSpatial"
-    codegenJavaPackageName = "com.fncspatialite"
-  }
-}
