@@ -160,7 +160,6 @@
     "source": "src",
     "output": "lib",
     "targets": [
-      "codegen",
       [
         "commonjs",
         {
@@ -181,19 +180,6 @@
         }
       ]
     ]
-  },
-  "codegenConfig": {
-    "name": "RNSpatialSpec",
-    "type": "all",
-    "jsSrcsDir": "src",
-    "outputDir": {
-      "ios": "ios/generated",
-      "android": "android/generated"
-    },
-    "android": {
-      "javaPackageName": "com.fncspatialite"
-    },
-    "includesGeneratedCode": true
   },
   "create-react-native-library": {
     "type": "module-legacy",
