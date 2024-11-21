@@ -9,8 +9,13 @@ import jsqlite.Database
 import jsqlite.Constants
 import jsqlite.Stmt
 import java.util.HashMap;
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.module.annotations.ReactModule
 
-class RNSpatialModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
+
+@ReactModule(name = RNSpatialModule.NAME)
+class RNSpatialModule(reactContext: ReactApplicationContext) :
+ NativeRNSpatialSpec(reactContext) {
 
     private var db: Database? = null
     private var isConnected = false
@@ -20,58 +25,55 @@ class RNSpatialModule(reactContext: ReactApplicationContext) : ReactContextBaseJ
         return NAME
     }
 
-    @ReactMethod
-fun connect(paramsDataBase: ReadableMap, promise: Promise) {
-    try {
-        val dbName = paramsDataBase.getString("dbName")?.trim().orEmpty()
-        if (dbName.isEmpty()) {
-            promise.reject("DBName can't be empty!", NullPointerException())
-            return
-        }
-
-        val finalDbName = if (dbName.endsWith(".sqlite")) dbName else "$dbName.sqlite"
-        val map = Arguments.createMap()
-        db = Database()
-
-        docDir = if (paramsDataBase.hasKey("localPath")) {
-            val localPath = paramsDataBase.getString("localPath")?.trim().orEmpty()
-            if (localPath.isEmpty()) {
-                promise.reject("Local path can't be empty!", "Local path can't be empty!")
+    override fun connect(paramsDataBase: ReadableMap, promise: Promise) {
+        try {
+            val dbName = paramsDataBase.getString("dbName")?.trim().orEmpty()
+            if (dbName.isEmpty()) {
+                promise.reject("DBName can't be empty!", NullPointerException())
                 return
             }
-            val mainPath = Environment.getExternalStorageDirectory()
-            val directory = File("$mainPath/$localPath") 
-            if (!directory.isDirectory) directory.mkdirs()
-            directory.absolutePath
-        } else {
-            reactApplicationContext.getExternalFilesDir(null)?.absolutePath
-        }
 
-        db?.open("$docDir/$finalDbName", Constants.SQLITE_OPEN_READWRITE or Constants.SQLITE_OPEN_CREATE)
+            val finalDbName = if (dbName.endsWith(".sqlite")) dbName else "$dbName.sqlite"
+            val map = Arguments.createMap()
+            db = Database()
 
-        // Check spatial initialized
-        var isSpatial = false
-        try {
-            isSpatial = db?.prepare("SELECT count(1) FROM spatial_ref_sys LIMIT 1")?.step() ?: false
-        } catch (e: jsqlite.Exception) {
-            if (e.message?.trim()?.startsWith("no such table: spatial_ref_sys") == true) {
-                db?.exec("SELECT InitSpatialMetaData(1)", null)
+            docDir = if (paramsDataBase.hasKey("localPath")) {
+                val localPath = paramsDataBase.getString("localPath")?.trim().orEmpty()
+                if (localPath.isEmpty()) {
+                    promise.reject("Local path can't be empty!", "Local path can't be empty!")
+                    return
+                }
+                val mainPath = Environment.getExternalStorageDirectory()
+                val directory = File("$mainPath/$localPath") 
+                if (!directory.isDirectory) directory.mkdirs()
+                directory.absolutePath
+            } else {
+                reactApplicationContext.getExternalFilesDir(null)?.absolutePath
             }
+
+            db?.open("$docDir/$finalDbName", Constants.SQLITE_OPEN_READWRITE or Constants.SQLITE_OPEN_CREATE)
+
+            // Check spatial initialized
+            var isSpatial = false
+            try {
+                isSpatial = db?.prepare("SELECT count(1) FROM spatial_ref_sys LIMIT 1")?.step() ?: false
+            } catch (e: jsqlite.Exception) {
+                if (e.message?.trim()?.startsWith("no such table: spatial_ref_sys") == true) {
+                    db?.exec("SELECT InitSpatialMetaData(1)", null)
+                }
+            }
+
+            isConnected = true
+            map.putBoolean("isConnected", isConnected)
+            map.putBoolean("isSpatial", isSpatial)
+            promise.resolve(map)
+
+        } catch (e: Exception) {
+            promise.reject(e.message, e)
         }
-
-        isConnected = true
-        map.putBoolean("isConnected", isConnected)
-        map.putBoolean("isSpatial", isSpatial)
-        promise.resolve(map)
-
-    } catch (e: Exception) {
-        promise.reject(e.message, e)
     }
-}
 
-
-    @ReactMethod
-    fun close(promise: Promise) {
+    override fun close(promise: Promise) {
         try {
             db?.close()
             isConnected = false
@@ -82,9 +84,7 @@ fun connect(paramsDataBase: ReadableMap, promise: Promise) {
             promise.reject(e.message, e)
         }
     }
-
-    @ReactMethod
-    fun executeQuery(query: String, promise: Promise) {
+    override fun executeQuery(query: String, promise: Promise) {
         try {
             val stmt = db?.prepare(query)
             val rows = Arguments.createArray()
