@@ -1,4 +1,3 @@
-import SQLite3
 
 @objc(RNSpatial)
 class RNSpatial: NSObject {
