@@ -29,7 +29,6 @@ fun connect(paramsDataBase: ReadableMap, promise: Promise) {
             return
         }
 
-        val finalDbName = if (dbName.endsWith(".sqlite")) dbName else "$dbName.sqlite"
         val map = Arguments.createMap()
         db = Database()
 
@@ -47,7 +46,7 @@ fun connect(paramsDataBase: ReadableMap, promise: Promise) {
             reactApplicationContext.getExternalFilesDir(null)?.absolutePath
         }
 
-        db?.open("$docDir/$finalDbName", Constants.SQLITE_OPEN_READWRITE or Constants.SQLITE_OPEN_CREATE)
+        db?.open(dbName, Constants.SQLITE_OPEN_READWRITE or Constants.SQLITE_OPEN_CREATE)
 
         // Check spatial initialized
         var isSpatial = false

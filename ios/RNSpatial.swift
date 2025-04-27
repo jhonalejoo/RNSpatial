@@ -1,3 +1,4 @@
+import SQLite3
 
 @objc(RNSpatial)
 class RNSpatial: NSObject {
@@ -18,8 +19,7 @@ class RNSpatial: NSObject {
         print("Error: proj.db directory not found in bundle")
         }
 
-        let finalDbName = dbName.hasSuffix(".sqlite") ? dbName : dbName + ".sqlite"
-        let filePath = finalDbName.cString(using: .utf8)
+        let filePath = dbName.cString(using: .utf8)
 
         // Abrir la base de datos SQLite
         if sqlite3_open_v2(filePath, &handle, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nil) != SQLITE_OK {
@@ -97,6 +97,33 @@ func executeQuery(_ query: String, resolver resolve: @escaping RCTPromiseResolve
     let formattedResult: [String: Any] = ["data": results]
     resolve(formattedResult)
     }
+
+    // Método para cerrar la base de datos
+@objc(close:withRejecter:)
+func close(resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+    if let db = handle {
+        if sqlite3_close(db) == SQLITE_OK {
+            handle = nil
+            let result: [String: Any] = [
+                "isConnected": false
+            ]
+            resolve(result)
+        } else {
+            if let errorMessage = String(validatingUTF8: sqlite3_errmsg(db)) {
+                reject("DB_CLOSE_ERROR", "Failed to close database: \(errorMessage)", nil)
+            } else {
+                reject("DB_CLOSE_ERROR", "Failed to close database", nil)
+            }
+        }
+    } else {
+        // Si ya estaba cerrado o nunca se abrió
+        let result: [String: Any] = [
+            "isConnected": false
+        ]
+        resolve(result)
+    }
+}
+
 }
 
 
