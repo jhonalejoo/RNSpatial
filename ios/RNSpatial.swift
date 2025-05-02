@@ -20,22 +20,28 @@ class RNSpatial: NSObject {
         }
 
         let filePath = dbName.cString(using: .utf8)
+        let isReadonly = (paramsDataBase["readonly"] as? Bool) ?? false
+        let isSpatial = (paramsDataBase["spatial"] as? Bool) ?? true
+        let flags: Int32 = isReadonly ? SQLITE_OPEN_READONLY : (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)
+
 
         // Abrir la base de datos SQLite
-        if sqlite3_open_v2(filePath, &handle, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, nil) != SQLITE_OK {
-            reject("DB_ERROR", "Unable to open database", nil)
-            return
+        if sqlite3_open_v2(filePath, &handle, flags, nil) != SQLITE_OK {
+        reject("DB_ERROR", "Unable to open database", nil)
+        return
         }
 
         // Llamar a la función C para inicializar SpatiaLite
+        if isSpatial {
         if initialize_spatialite(handle) != 0 {
             reject("SPATIALITE_ERROR", "Failed to initialize SpatiaLite", nil)
             return
         }
+    }
 
         let result: [String: Any] = [
             "isConnected": true,
-            "isSpatial": true
+            "isSpatial": isSpatial
         ]
         resolve(result)
     }

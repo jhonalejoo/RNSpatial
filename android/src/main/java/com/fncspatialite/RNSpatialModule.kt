@@ -46,21 +46,30 @@ fun connect(paramsDataBase: ReadableMap, promise: Promise) {
             reactApplicationContext.getExternalFilesDir(null)?.absolutePath
         }
 
-        db?.open(dbName, Constants.SQLITE_OPEN_READWRITE or Constants.SQLITE_OPEN_CREATE)
+        val isReadonly = paramsDataBase.hasKey("readonly") && paramsDataBase.getBoolean("readonly")
+        val isSpatial = !paramsDataBase.hasKey("spatial") || paramsDataBase.getBoolean("spatial")
 
+        val flags = if (isReadonly)
+            Constants.SQLITE_OPEN_READONLY
+        else
+            Constants.SQLITE_OPEN_READWRITE or Constants.SQLITE_OPEN_CREATE
+
+        db?.open(dbName, flags)
         // Check spatial initialized
-        var isSpatial = false
-        try {
-            isSpatial = db?.prepare("SELECT count(1) FROM spatial_ref_sys LIMIT 1")?.step() ?: false
-        } catch (e: jsqlite.Exception) {
-            if (e.message?.trim()?.startsWith("no such table: spatial_ref_sys") == true) {
-                db?.exec("SELECT InitSpatialMetaData(1)", null)
+        var spatialInitialized = false
+        if (isSpatial) {
+            try {
+                spatialInitialized = db?.prepare("SELECT count(1) FROM spatial_ref_sys LIMIT 1")?.step() ?: false
+            } catch (e: jsqlite.Exception) {
+                if (e.message?.trim()?.startsWith("no such table: spatial_ref_sys") == true) {
+                    db?.exec("SELECT InitSpatialMetaData(1)", null)
+                }
             }
         }
 
         isConnected = true
         map.putBoolean("isConnected", isConnected)
-        map.putBoolean("isSpatial", isSpatial)
+        map.putBoolean("isSpatial", spatialInitialized)
         promise.resolve(map)
 
     } catch (e: Exception) {
