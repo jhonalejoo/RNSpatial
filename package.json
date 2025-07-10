@@ -25,6 +25,7 @@
     "SpatiaLite",
     "cpp",
     "*.podspec",
+    "react-native.config.js",
     "!ios/build",
     "!android/build",
     "!android/gradle",
@@ -43,7 +44,7 @@
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
     "prepare": "bob build",
-    "release": "release-it"
+    "release": "release-it --only-version"
   },
   "keywords": [
     "react-native",
@@ -161,12 +162,6 @@
     "output": "lib",
     "targets": [
       [
-        "commonjs",
-        {
-          "esm": true
-        }
-      ],
-      [
         "module",
         {
           "esm": true
@@ -175,11 +170,17 @@
       [
         "typescript",
         {
-          "project": "tsconfig.build.json",
-          "esm": true
+          "project": "tsconfig.build.json"
         }
       ]
     ]
+  },
+  "codegenConfig": {
+    "name": "RNSpatialSpec",
+    "type": "modules",
+    "android": {
+      "javaPackageName": "com.fncspatialite"
+    }
   },
   "create-react-native-library": {
     "type": "module-legacy",

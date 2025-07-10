@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { StyleSheet, View, Text, Button, Platform } from 'react-native';
 import RNSpatial from 'react-native-fnc-spatialite';
-var RNFS = require('react-native-fs');
+let RNFS = require('react-native-fs');
 
 export default function App() {
   const logFilePath = RNFS.DocumentDirectoryPath + '/dbSica.sqlite';
@@ -9,7 +9,7 @@ export default function App() {
   useEffect(() => {
     const initializeDatabase = async () => {
       try {
-        const result = await RNSpatial.connect({ dbName: Platform.OS === 'android' ? 'dbSica.sqlite'  : logFilePath});
+        const result = await RNSpatial.connect({ dbName: logFilePath});
         console.log('Success:', result);
       } catch (error) {
         console.error('Error:', error);
@@ -25,11 +25,11 @@ export default function App() {
         if (validation === false) {
           RNSpatial.executeQuery('SELECT  VER_PK from SC_VEREDAS WHERE  VER_PK =  10131').then(response => {
                 console.log(response,'response')
-                const result = [];
-                for (let i = 0; i < response.data.length; ++i) {
-                    const objResult = {};
-                    for (var key in response.data[i]) {
-                        objResult[key.toUpperCase()] = response.data[i][key];
+                const result: Array<{ [key: string]: any }> = [];
+                for (const element of response.data) {
+                    const objResult: { [key: string]: any } = {};
+                    for (let key in element) {
+                        objResult[key.toUpperCase()] = element[key];
                     }
                     result.push(objResult);
                 }

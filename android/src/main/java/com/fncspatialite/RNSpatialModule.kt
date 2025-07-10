@@ -1,27 +1,35 @@
 package com.fncspatialite
 
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.module.annotations.ReactModule
+import com.facebook.react.bridge.ReactMethod
+import com.facebook.react.bridge.Promise
+import com.facebook.react.bridge.ReadableMap
+import com.facebook.react.bridge.Arguments
 import android.os.Environment
 import android.widget.Toast
-import com.facebook.react.bridge.*
 import java.util.Map
-import java.io.File;
+import java.io.File
 import jsqlite.Database
 import jsqlite.Constants
 import jsqlite.Stmt
-import java.util.HashMap;
+import java.util.HashMap
 
-class RNSpatialModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
+@ReactModule(name = RNSpatialModule.NAME)
+class RNSpatialModule(reactContext: ReactApplicationContext) :
+  NativeRNSpatialSpec(reactContext) {
 
-    private var db: Database? = null
-    private var isConnected = false
-    private var docDir: String? = null
+  private var db: Database? = null
+  private var isConnected = false
+  private var docDir: String? = null
 
-    override fun getName(): String {
-        return NAME
-    }
+  override fun getName(): String {
+    return NAME
+  }
 
-    @ReactMethod
-fun connect(paramsDataBase: ReadableMap, promise: Promise) {
+
+  @ReactMethod
+  override fun connect(paramsDataBase: ReadableMap, promise: Promise) {
     try {
         val dbName = paramsDataBase.getString("dbName")?.trim().orEmpty()
         if (dbName.isEmpty()) {
@@ -75,61 +83,60 @@ fun connect(paramsDataBase: ReadableMap, promise: Promise) {
     } catch (e: Exception) {
         promise.reject(e.message, e)
     }
-}
+  }
 
-
-    @ReactMethod
-    fun close(promise: Promise) {
-        try {
-            db?.close()
-            isConnected = false
-            val map = Arguments.createMap()
-            map.putBoolean("isConnected", isConnected)
-            promise.resolve(map)
-        } catch (e: jsqlite.Exception) {
-            promise.reject(e.message, e)
-        }
+  @ReactMethod
+  override fun close(promise: Promise) {
+    try {
+        db?.close()
+        isConnected = false
+        val map = Arguments.createMap()
+        map.putBoolean("isConnected", isConnected)
+        promise.resolve(map)
+    } catch (e: jsqlite.Exception) {
+        promise.reject(e.message, e)
     }
+  }
 
-    @ReactMethod
-    fun executeQuery(query: String, promise: Promise) {
-        try {
-            val stmt = db?.prepare(query)
-            val rows = Arguments.createArray()
-            var rowCount = 0
-            var colCount = 0
+  @ReactMethod
+  override fun executeQuery(query: String, promise: Promise) {
+    try {
+        val stmt = db?.prepare(query)
+        val rows = Arguments.createArray()
+        var rowCount = 0
+        var colCount = 0
 
-            while (stmt?.step() == true) {
-                rowCount++
-                if (colCount == 0) {
-                    colCount = stmt.column_count()
-                }
-                val row = Arguments.createMap()
-                for (i in 0 until colCount) {
-                    when (stmt.column_type(i)) {
-                        Constants.SQLITE3_TEXT -> row.putString(stmt.column_name(i).toLowerCase(), stmt.column_string(i))
-                        Constants.SQLITE_INTEGER -> row.putInt(stmt.column_name(i).toLowerCase(), stmt.column_long(i).toInt())
-                        Constants.SQLITE_FLOAT -> row.putDouble(stmt.column_name(i).toLowerCase(), stmt.column_double(i))
-                        Constants.SQLITE_NULL -> row.putNull(stmt.column_name(i).toLowerCase())
-                        else -> row.putString(stmt.column_name(i).toLowerCase(), stmt.column_string(i))
-                    }
-                }
-                rows.pushMap(row)
+        while (stmt?.step() == true) {
+            rowCount++
+            if (colCount == 0) {
+                colCount = stmt.column_count()
             }
-
-            val result = Arguments.createMap().apply {
-                putInt("rows", rowCount)
-                putInt("cols", colCount)
-                putArray("data", rows)
+            val row = Arguments.createMap()
+            for (i in 0 until colCount) {
+                when (stmt.column_type(i)) {
+                    Constants.SQLITE3_TEXT -> row.putString(stmt.column_name(i).toLowerCase(), stmt.column_string(i))
+                    Constants.SQLITE_INTEGER -> row.putInt(stmt.column_name(i).toLowerCase(), stmt.column_long(i).toInt())
+                    Constants.SQLITE_FLOAT -> row.putDouble(stmt.column_name(i).toLowerCase(), stmt.column_double(i))
+                    Constants.SQLITE_NULL -> row.putNull(stmt.column_name(i).toLowerCase())
+                    else -> row.putString(stmt.column_name(i).toLowerCase(), stmt.column_string(i))
+                }
             }
-            promise.resolve(result)
-
-        } catch (e: jsqlite.Exception) {
-            promise.reject(e.message, e)
+            rows.pushMap(row)
         }
-    }
 
-    companion object {
-        const val NAME = "RNSpatial"
+        val result = Arguments.createMap().apply {
+            putInt("rows", rowCount)
+            putInt("cols", colCount)
+            putArray("data", rows)
+        }
+        promise.resolve(result)
+
+    } catch (e: jsqlite.Exception) {
+        promise.reject(e.message, e)
     }
+  }
+
+  companion object {
+    const val NAME = "RNSpatial"
+  }
 }
